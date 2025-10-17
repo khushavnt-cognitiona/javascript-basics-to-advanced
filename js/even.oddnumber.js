@@ -13,7 +13,7 @@ for(let i=a;i<=b;i++){
 
     }else{
        odd=i; 
-      console.log(`${odd} is an odd number`);
+      console.log(`${odd}is an odd number`);
     }
 
 }
