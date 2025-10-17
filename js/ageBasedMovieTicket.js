@@ -14,34 +14,27 @@
 // Age greater than 60	 “Senior Citizen Ticket — ₹120”
 // Invalid age (less than 0 or greater than 120)	 “Invalid age entered!”
 
+let age = parseInt(prompt("enter your age"));
 
-let age= parseInt(prompt("enter your age"));
-
- if( age >120 ) {
-    console.log("invaild age") 
- }
- else{
-    if( age >0  &&age <5){
+if (age > 120) {
+  console.log("invaild age");
+} else {
+  if (age > 0 && age < 5) {
     console.log("Free Ticket (Infant)");
-    }
-    else{
-      console.log("invaild age")  
-    }
- }
- 
- if(age <=5 &&  age>=12){
-     console.log("Child Ticket — ₹100”");
-}else if(age>12 && age <19){
-    console.log("Student Ticket — ₹150");
-
-}else if(age>18 && age <61){
-    console.log("Adult Ticket — ₹200");
-
-
+  } else {
+    console.log("invaild age");
+  }
 }
-if(age>61 && age<=120  ){
+
+if (age <= 5 && age >= 12) {
+  console.log("Child Ticket — ₹100”");
+} else if (age > 12 && age < 19) {
+  console.log("Student Ticket — ₹150");
+} else if (age > 18 && age < 61) {
+  console.log("Adult Ticket — ₹200");
+}
+if (age > 61 && age <= 120) {
   console.log("Senior Citizen Ticket — ₹120");
-}
-else{
-    console.log("invalid age")
+} else {
+  console.log("invalid age");
 }
