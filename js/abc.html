@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Romantic Karaoke — Paijan (Animated Lyrics)</title>
+  <style>
+    :root{
+      --bg1: #0f172a;
+      --bg2: #3b185f;
+      --accent: #ff6b81;
+      --soft: rgba(255,255,255,0.08);
+      --text: #fff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: radial-gradient(600px 400px at 10% 20%, rgba(255,107,129,0.08), transparent),
+                  linear-gradient(120deg, var(--bg1), var(--bg2));
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    /* soft blur vignette */
+    .stage{
+      width:min(980px, 96%);
+      padding:30px;
+      border-radius:20px;
+      backdrop-filter: blur(6px) saturate(120%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      position:relative;
+      overflow:hidden;
+    }
+
+    h1{
+      font-size:1.4rem;
+      margin:0 0 10px 0;
+      letter-spacing:0.6px;
+      color: #ffdfe6;
+      text-align:center;
+    }
+    .meta{
+      text-align:center;
+      font-size:0.9rem;
+      color: rgba(255,255,255,0.75);
+      margin-bottom:18px;
+    }
+
+    /* player controls */
+    .controls{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      margin-bottom:18px;
+    }
+    .btn{
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.06);
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      color:var(--text);
+      font-weight:600;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn:active{transform:translateY(1px)}
+
+    /* lyric area */
+    #lyrics {
+      min-height:140px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      border-radius:14px;
+      margin: 0 24px;
+      text-align:center;
+      position:relative;
+      z-index:3;
+    }
+
+    .line {
+      font-size:1.6rem;
+      line-height:1.4;
+      max-width:900px;
+      display:inline-block;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .word {
+      display:inline-block;
+      opacity:0.25;
+      transform: translateY(6px);
+      transition: all 280ms cubic-bezier(.2,.9,.2,1);
+      margin-right:6px;
+      font-weight:600;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .word.active {
+      opacity:1;
+      transform: translateY(0);
+      color: var(--accent);
+      text-shadow: 0 6px 28px rgba(255,107,129,0.14);
+    }
+
+    /* romantic floating hearts */
+    .hearts {
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index:1;
+    }
+    .heart{
+      position:absolute;
+      width:18px;
+      height:18px;
+      transform: rotate(-45deg);
+      background:linear-gradient(180deg, #ff9ab0, #ff6b81);
+      border-radius:4px 4px 0 0;
+      opacity:0.14;
+      animation: floatUp linear infinite;
+      filter: blur(0.2px);
+    }
+    .heart:before, .heart:after{
+      content:'';
+      position:absolute;
+      width:18px;height:18px;
+      background:linear-gradient(180deg, #ff9ab0, #ff6b81);
+      border-radius:50%;
+      top:-9px;
+      left:0;
+    }
+    .heart:after{ left:9px; top:0;} /* creates heart shape */
+
+    @keyframes floatUp{
+      0%{ transform: translateY(0) rotate(-45deg) scale(0.7); opacity:0 }
+      5%{ opacity:0.12 }
+      50%{ opacity:0.16 }
+      100%{ transform: translateY(-420px) rotate(-45deg) scale(1.1); opacity:0 }
+    }
+
+    /* small progress bar */
+    .progressWrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:14px;
+      justify-content:center;
+    }
+    .timeline{
+      width:420px;
+      height:6px;
+      background:var(--soft);
+      border-radius:6px;
+      overflow:hidden;
+      position:relative;
+    }
+    .playhead{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, #ffd1dc, #ff6b81);
+      transition:width 0.2s linear;
+    }
+    .time{
+      font-size:0.85rem;
+      color:rgba(255,255,255,0.65);
+    }
+
+    /* small note */
+    .note{font-size:0.78rem;color:rgba(255,255,255,0.55); text-align:center; margin-top:10px}
+
+    /* hide the iframe area */
+    #player{ position:absolute; left:-9999px; top:-9999px; width:1px; height:1px; opacity:0; pointer-events:none}
+    @media(max-width:640px){
+      .line{font-size:1.2rem}
+      .timeline{width:260px}
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <h1>Romantic Karaoke — Paijan (Payal Maney Wala)</h1>
+    <div class="meta">YouTube audio playing · Animated romantic lyrics</div>
+
+    <div class="controls">
+      <button id="playBtn" class="btn">Play ▶</button>
+      <button id="pauseBtn" class="btn">Pause ⏸</button>
+      <button id="rewBtn" class="btn">« 5s</button>
+      <button id="fwdBtn" class="btn">5s »</button>
+    </div>
+
+    <div id="lyrics" aria-live="polite">
+      <div class="line" id="lineContainer">लगा रहा है रोमांटिक अहसास...</div>
+    </div>
+
+    <div class="progressWrap">
+      <div class="time" id="curTime">0:00</div>
+      <div class="timeline" id="timeline"><div class="playhead" id="playhead"></div></div>
+      <div class="time" id="durTime">0:00</div>
+    </div>
+
+    <div class="note">Tip: Replace the placeholder lyric lines in <code>lyrics</code> array with full Marathi lines & timestamps.</div>
+
+    <div id="player"></div>
+    <div class="hearts" id="hearts"></div>
+  </div>
+
+  <!-- YouTube API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    /*********************************************************
+     * IMPORTANT:
+     * - Video ID used below: YZGH24akB4E (you provided link)
+     * - Replace the lyrics[] array with the correct Marathi lyrics
+     *   and accurate timestamps (in seconds). For copyright reasons,
+     *   placeholders are shown — add real lyrics lines locally.
+     *********************************************************/
+
+    // --- Lyrics data: each object = { time: seconds, text: "one full line" }
+    // Replace these placeholder lines with the real lines and correct timestamps.
+    const lyrics = [
+      { time: 0, text: "पायल माने वाला, नाचे गाव माझा..." },
+      { time: 7, text: "हिरव्या वाटा मध्ये तूच आहेस..." },
+      { time: 14, text: "डोळ्यात तुझ्यात मी हरवतोय..." },
+      { time: 21, text: "तुझ्या स्पर्शात सावरतो मी..." },
+      { time: 28, text: "KHUSHVANT JADHAO.." }
+    ];
+
+    // YouTube player reference
+    let player;
+    let duration = 0;
+    let tickingInterval = null;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '0', width: '0', videoId: 'YZGH24akB4E',
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          modestbranding: 1,
+          rel: 0
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(e){
+      // get duration (may be 0 until playback begins)
+      try { duration = player.getDuration(); updateDurationUI(); } catch(e){}
+      // start ticking but only update visuals if playing
+      startTicker();
+      // create some hearts
+      generateHearts(12);
+    }
+
+    function onPlayerStateChange(e){
+      // You can respond to play/pause here if needed
+    }
+
+    // Controls
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const rewBtn = document.getElementById('rewBtn');
+    const fwdBtn = document.getElementById('fwdBtn');
+
+    playBtn.onclick = () => { if(player) player.playVideo(); }
+    pauseBtn.onclick = () => { if(player) player.pauseVideo(); }
+    rewBtn.onclick = () => { if(player) seekBy(-5); }
+    fwdBtn.onclick = () => { if(player) seekBy(5); }
+
+    function seekBy(sec){
+      if(!player) return;
+      const t = Math.max(0, player.getCurrentTime() + sec);
+      player.seekTo(t, true);
+    }
+
+    // ticker to sync lyrics and UI
+    function startTicker(){
+      if(tickingInterval) clearInterval(tickingInterval);
+      tickingInterval = setInterval(() => {
+        if(!player || typeof player.getCurrentTime !== 'function') return;
+        const cur = player.getCurrentTime();
+        // update timeline
+        updatePlayhead(cur);
+        // update time UI
+        updateCurrentTimeUI(cur);
+        // update duration if unknown
+        if(!duration) { duration = player.getDuration(); updateDurationUI(); }
+        // find current line
+        const current = findCurrentLine(cur);
+        if(current) animateLine(current.text);
+      }, 220); // 220ms works smooth enough
+    }
+
+    function findCurrentLine(time){
+      for(let i=lyrics.length-1; i>=0; i--){
+        if(time >= lyrics[i].time) return lyrics[i];
+      }
+      return null;
+    }
+
+    // Animated display: word-by-word fade in (romantic)
+    let lastShown = '';
+    function animateLine(line){
+      if(lastShown === line) return;
+      lastShown = line;
+      const container = document.getElementById('lineContainer');
+      container.innerHTML = '';
+      const words = line.split(' ');
+      words.forEach((w, i) => {
+        const span = document.createElement('span');
+        span.textContent = w + (i < words.length-1 ? '\u00A0' : '');
+        span.className = 'word';
+        container.appendChild(span);
+        // stagger animation
+        setTimeout(()=> span.classList.add('active'), i * 280);
+      });
+      // subtle pulse background when new line shows
+      container.style.transform = 'scale(1.01)';
+      setTimeout(()=> container.style.transform = '', 650);
+    }
+
+    // Timeline UI
+    function updatePlayhead(current){
+      const ph = document.getElementById('playhead');
+      if(!duration || duration <= 0) {
+        ph.style.width = '0%';
+        return;
+      }
+      const pct = Math.min(100, (current / duration) * 100);
+      ph.style.width = pct + '%';
+    }
+    function updateCurrentTimeUI(cur){
+      const el = document.getElementById('curTime');
+      el.textContent = formatTime(cur);
+    }
+    function updateDurationUI(){
+      const el = document.getElementById('durTime');
+      el.textContent = formatTime(duration || 0);
+    }
+    function formatTime(s){
+      if(!s || isNaN(s)) return '0:00';
+      s = Math.floor(s);
+      const m = Math.floor(s/60);
+      const sec = s % 60;
+      return m + ':' + (sec < 10 ? '0' + sec : sec);
+    }
+
+    // create floating hearts for romance
+    function generateHearts(count){
+      const wrap = document.getElementById('hearts');
+      for(let i=0;i<count;i++){
+        const h = document.createElement('div');
+        h.className = 'heart';
+        // random starting position
+        const left = Math.random() * 100; // vw percent
+        const size = 10 + Math.random()*26;
+        h.style.left = left + '%';
+        h.style.bottom = (-20 - Math.random()*30) + 'px';
+        h.style.width = size + 'px';
+        h.style.height = size + 'px';
+        // random animation duration & delay
+        const dur = 6 + Math.random()*8;
+        const delay = Math.random()*4;
+        h.style.animationDuration = dur + 's';
+        h.style.animationDelay = delay + 's';
+        h.style.opacity = (0.06 + Math.random()*0.2).toString();
+        wrap.appendChild(h);
+      }
+    }
+
+    // clickable timeline seek (nice-to-have)
+    const timelineEl = document.getElementById('timeline');
+    timelineEl.addEventListener('click', (e)=>{
+      if(!player || !duration) return;
+      const rect = timelineEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const pct = x / rect.width;
+      const t = pct * duration;
+      player.seekTo(t, true);
+    });
+
+    // initialize first display (placeholder)
+    document.getElementById('lineContainer').textContent = 'आनंद घ्या — romantic animated lyrics चालू होणार...';
+
+    // small safety: resume muted autoplay policy (some browsers restrict autoplay)
+    // We won't force autoplay — user clicks Play button to start if blocked.
+
+    // End of script
+  </script>
+</body>
+</html>

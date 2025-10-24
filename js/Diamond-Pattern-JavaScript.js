@@ -1,6 +1,5 @@
 
 // Diamond Pattern
-
 // Question 
 // You are given an integer n. Based on the value of n, print a center-aligned diamond pattern made of asterisks (*).
 // The upper half of the pattern contains n rows, and the lower half contains n - 1 rows.
